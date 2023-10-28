@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "fxf"
+version = "0.1.0"
+description = "Flux-Capacitor-Form, a tool to interact with Flux Capacitor"
+authors = ["Rémy Sanchez <remy.sanchez@hyperthese.net>"]
+license = "WTFPL"
+readme = "README.md"
+packages = [
+    { include = "fxf", from = "src" },
+]
+
+[tool.poetry.scripts]
+fxf = "fxf.__main__:__main__"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+rich-click = "^1.7.0"
+keyring = "^24.2.0"
+appdirs = "^1.4.4"
+httpx = "*"
+tomlkit = "^0.12.1"
+
+[tool.poetry.group.dev.dependencies]
+monoformat = "^0.2.0"
+ipython = "^8.16.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
