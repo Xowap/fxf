@@ -104,21 +104,21 @@ def test(ctx: click.Context):
     table.add_column("Status")
 
     for domain in domains:
-        with cm.get_api(domain) as api:
-            try:
+        try:
+            with cm.get_api(domain) as api:
                 user = api.me().get_current_user()
 
                 if user["type"] == "authenticated":
                     status = "[green]OK[/]"
                 else:
                     status = "[red]Not Authenticated[/]"
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code == 403:
-                    status = "[red]Invalid Token[/]"
-                else:
-                    status = f"[red]HTTP {e.response.status_code}[/]"
-            except MissingTokenError:
-                status = "[red]No Token[/]"
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403:
+                status = "[red]Invalid Token[/]"
+            else:
+                status = f"[red]HTTP {e.response.status_code}[/]"
+        except MissingTokenError:
+            status = "[red]No Token[/]"
 
         table.add_row(domain, status)
 
