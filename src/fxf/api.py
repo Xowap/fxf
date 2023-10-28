@@ -4,6 +4,7 @@ import httpx
 def auto_raise(response: httpx.Response):
     """Hook for HTTPX to auto-raise for status"""
 
+    response.read()
     response.raise_for_status()
     return response
 
@@ -19,6 +20,26 @@ class MeApi:
         or not)."""
 
         return self.client.get("me/").json()
+
+
+class ProjectApi:
+    def __init__(self, client: httpx.Client):
+        self.client = client
+
+    def resolve(self, remote: str) -> dict:
+        """Resolves a remote to a project"""
+
+        return self.client.get("project/resolve/", params={"remote": remote}).json()
+
+    def gha(self, project: dict, fluxfile: str) -> dict:
+        """Generates the GHA files for a project"""
+
+        return self.client.post(
+            f"project/{project['id']}/gha/",
+            json={
+                "fluxfile": fluxfile,
+            },
+        ).json()
 
 
 class ApiFactory:
@@ -61,3 +82,8 @@ class ApiFactory:
         """Returns the "Me" namespace of the API"""
 
         return MeApi(self.client)
+
+    def project(self) -> "ProjectApi":
+        """Returns the "Project" namespace of the API"""
+
+        return ProjectApi(self.client)

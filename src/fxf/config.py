@@ -1,12 +1,13 @@
+import os
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Mapping, Optional
 
 import appdirs
 import keyring
 import keyring.backend
 import tomlkit
 import tomlkit.items
-import os
 
 from .api import ApiFactory
 from .errors import MissingTokenError
@@ -124,3 +125,42 @@ class ConfigManager:
 
             profile["domains"] = domains
             self._save_token(base_url, token)
+
+    def has_credentials(self) -> bool:
+        """Returns True if there are credentials available for the current
+        profile."""
+
+        return bool(self.get_profile().get("domains", []))
+
+    def save_project(self, origin: str, domain: str, project: dict) -> None:
+        """Saves a project's meta information so that we know which project
+        ID to hit on which domain when we need to do something about this
+        project."""
+
+        with self.edit_profile() as profile:
+            if "projects" not in profile:
+                profile.add("projects", tomlkit.table())
+
+            if origin not in profile["projects"]:
+                profile["projects"].add(origin, tomlkit.table())
+
+            project_table = tomlkit.inline_table()
+            project_table.update(project)
+
+            profile["projects"][origin] = dict(
+                domain=domain,
+                project=project_table,
+            )
+
+    def get_project(self, origin: str) -> Optional[Mapping]:
+        """Returns the meta-information that we got about a given project"""
+
+        profile = self.get_profile()
+
+        if "projects" not in profile:
+            return None
+
+        if origin not in profile["projects"]:
+            return None
+
+        return profile["projects"][origin]
